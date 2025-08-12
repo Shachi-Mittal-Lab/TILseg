@@ -151,7 +151,7 @@ path/to/your/folder/
 
 ### Visualization of TILseg segmentation results on a region of interest
 
-![Visualization](README_images/visualization.jpg)
+![Visualization](images/tilseg_performance.jpg)
 
 
 ## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
