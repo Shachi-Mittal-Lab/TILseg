@@ -13,11 +13,13 @@ Tumor infiltrating lymphocytes (TILs) are an increasingly important indicator of
 
 Furthermore, the clinical utility of the spatial heterogenity of sTILs is unclear, and is not taken into account per the International TIL Working Group guidelines. The TILseg pipeline has the functionality to generate sTIL scores within spatially defined regions about cancer epithelia.
 
-## METHODOLOGY
-
-A visual description of the pipeline is shown in A, C, & D below for generating patient-level sTIL scores.
-
+### Overall Workflow
 ![TILseg Pipeline Workflow](images/tilseg_methods.jpg)
+
+### Sample Results
+![Visualization](images/tilseg_performance.jpg)
+
+## METHODOLOGY
 
 ### 1. Patch Extraction
 
@@ -148,11 +150,6 @@ path/to/your/folder/
 ├── slide_2.xml
 └── ...               # Additional slide pairs
 ```
-
-### Visualization of TILseg segmentation results on a region of interest
-
-![Visualization](images/tilseg_performance.jpg)
-
 
 ## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
 
