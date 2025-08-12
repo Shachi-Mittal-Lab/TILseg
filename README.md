@@ -17,7 +17,7 @@ Furthermore, the clinical utility of the spatial heterogenity of sTILs is unclea
 
 A visual description of the pipeline is shown in A, C, & D below for generating patient-level sTIL scores.
 
-![TILseg Pipeline Workflow](README_images/pipeline.jpg)
+![TILseg Pipeline Workflow](images/tilseg_methods.jpg)
 
 ### 1. Patch Extraction
 
@@ -149,6 +149,11 @@ path/to/your/folder/
 └── ...               # Additional slide pairs
 ```
 
+### Visualization of TILseg segmentation results on a region of interest
+
+![Visualization](README_images/visualization.jpg)
+
+
 ## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
 
 For a cohort of 51 TNBC patients who received neoadjuvant chemotherapy, we ran their H&E-stained diagnostic biopsy section through the TILseg pipeline. For slide-level stroma & sTILs, we observed statistically significant stratification of good and poor response to therapy, as measured by recurrence-free survival (RFS). We also find that scoring only sTILs < 0.5 mm from epithelia has a poor stratification potential, most likely due to not accounting for cancer-interacting sTILs farther away from epithelia. On the contrary, scoring sTILs 1.0-1.5 mm from epithelia shows the best stratification of this cohort. 
@@ -156,8 +161,3 @@ For a cohort of 51 TNBC patients who received neoadjuvant chemotherapy, we ran t
 | Overall TILseg Patient Scores | Spatially Confined TILseg Patient Scores 
 | :----: | :-----: |
 | ![TILseg Stratifying TNBC Patient Cohort](README_images/biopsy_survival.jpg) | ![TILseg Spatial Stratification](README_images/spatial_survival.jpg) |
-
-
-Visualization of TILseg segmentation results on a region of interest
-
-![Visualization](README_images/visualization.jpg)
