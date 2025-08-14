@@ -141,9 +141,9 @@ In a single folder (`path/to/your/folder`), please include the following:
 
 Invalid Examples:
 
-❌ `slide1.svs` and `Slide1.xml` (case mismatch)  
-❌ `specimen_A.svs` and `specimen_A.json` (wrong annotation format)  
-❌ `sample_05.svs` with no corresponding XML file
+❌ `slide_1.svs` and `Slide_1.xml` (case mismatch)  
+❌ `slide_1.svs` and `slide_1.json` (wrong annotation format)  
+❌ `side_1.svs` with no corresponding XML file
 
 ### Recommended Directory Structure for Execution
 ```text
