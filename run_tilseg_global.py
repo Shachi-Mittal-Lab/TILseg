@@ -130,7 +130,7 @@ def main():
     if 7 in steps:
         print("7. TIL score generating")
         from tilseg import til_score
-        til_score.til_score_generator(mainPath)
+        til_score.compute_global_tilseg_score(mainPath, directories)
         print("Done (7/7)")
 
 
