@@ -1,12 +1,8 @@
-'''
-2. IMPLEMENT 3-CLASS CLASSIFICATION
-[descriptions]
-'''
+# Imports
 import time
 import os
 import numpy as np
 import gc
-import glob
 
 from keras.layers import Dropout, Flatten, Dense
 from keras.applications import VGG19
@@ -48,8 +44,19 @@ def paths(mainpath, inpath):
 def constructVGGModel():
     res_conv = VGG19(weights='imagenet', include_top=False, input_shape=(48, 48, 3))
 
-    modelPath = r"C:\Users\Waluigi\Desktop\github_repos\TILseg2\3CC_retraining_V\model_retraining_V_part3iii_20250124.h5"
+    # get the directory where the current script is located (i.e. tilseg)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     
+    # go up one level (i.e. TILseg repository)
+    parent_dir = os.path.dirname(script_dir)
+    
+    # Construct the model path relative to grandparent directory
+    modelPath = os.path.join(
+        parent_dir, 
+        "models", 
+        "3CC_discovery.h5" # TODO
+    )
+
     if modelPath:
         # Freeze the layers except the last 12 layers
         # for layer in res_conv.layers[:-12]:

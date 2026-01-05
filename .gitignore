@@ -1,12 +1,9 @@
-# 3CC model
-*.h5
+# # 3CC model
+# *.h5
 
 # Data Files
 data/
 test/
-
-# Model file
-tilseg2/*.h5
 
 # MAC DS_Store
 .DS_Store
