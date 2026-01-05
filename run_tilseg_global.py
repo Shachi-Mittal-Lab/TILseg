@@ -83,7 +83,6 @@ def main():
                 print(directory, ": 5. Nuclear Segmentation & Filtering")
                 from tilseg import nuclearseg
                 segmentations, _ = nuclearseg.nuclearseg_he_wrapper(path, save_seg=True, save_image=False)
-                # print(directory, ": Done (5/6)")
 
                 from tilseg import filtering_contours
                 til_contours = filtering_contours.filtering(path, segmentations)
