@@ -1,4 +1,5 @@
 import os
+import sys
 from multiprocessing import Pool, cpu_count
 import pickle
 
@@ -11,13 +12,12 @@ def main():
         else:
             print("The path does not exist or is invalid. Please try again.")
 
-
     # Input Steps
     steps = None
     while steps is None:
-        string = "Input steps number you would like to run:\n1. Extracting Patches from Annotations\n2. Implement: 3 class classifier\n3. Binary Stromal Mask\n4. Stromal Patches Multiplication\n5. Nuclear Segmentation Stardist & Filtering Contours\n6. TIL score"
+        string = "Input steps number you would like to run:\n1. Extracting Patches from Annotations\n2. Implement: 3 class classifier\n3. Binary Stromal Mask\n4. Stromal Patches Multiplication\n5. Nuclear Segmentation Stardist & Filtering Contours\n6. Stitch WSI\n7. TIL score"
         print(string)
-        user_input = input("Input as [1,2,3,4,5,6]: ")
+        user_input = input("Input as [1,2,3,4,5,6,7]: ")
         try:
             # Split the input by commas and try to convert each element to an integer
             steps_list = list(map(int, user_input.split(',')))
@@ -29,12 +29,12 @@ def main():
         except ValueError:
             print("Invalid input. Please enter numbers separated by commas.")
 
-    # 1. Extracting Patches from Annotations
+    ### 1. Extracting Patches from Annotations
     if 1 in steps:
         print("1. Extracting Patches from Annotations")
-        from tilseg2 import extracting_patches_from_annotated_folder_wise
-        extracting_patches_from_annotated_folder_wise.extracting_patches(mainPath)
-        print("Done (1/6)")
+        from tilseg import extracting_patches
+        extracting_patches.extracting_patches(mainPath)
+        print("Done (1/7)")
     else:
         print("Skip: 1. Extracting Patches from Annotations (1/6)")
 
@@ -50,59 +50,88 @@ def main():
         
         print("Running pipeline for WSI ", directory)
 
-        # * Reorganize Patches
+        ### 2. Implement: 3 class classifier
         if 2 in steps:
-            # 2. Implement: 3 class classifier
             print(directory, ": 2. Implement: 3 class classifier")
-            from tilseg2 import implement
+            from tilseg import implement
             implement.implement(path)
-            print(directory, ": Done (2/6)")
+            print(directory, ": Done (2/7)")
         else:
             print("Skip: 2. Implement: 3 class classifier (2/7)")
 
+        ### 3. Binary Stromal Mask
         if 3 in steps:            
-            # 7. Binary Stromal Mask
             print(directory, ": 3. Binary Stromal Mask")
-            from tilseg2 import binary_stromal_mask
+            from tilseg import binary_stromal_mask
             binary_stromal_mask.binary_stromal_mask(path)
-            print(directory, ": Done (3/6)")
+            print(directory, ": Done (3/7)")
         
+        ### 4. Stromal Patches Multiplication
         if 4 in steps:
-            # 4. Stromal Patches Multiplication
             print(directory, ": 4. Stromal Patches Multiplication")
-            from tilseg2 import stromal_patches_multiplication
+            from tilseg import stromal_patches_multiplication
             stromal_patches_multiplication.multiplying(path)
-            print(directory, ": Done (4/6)")
-
-    for directory in directories:
-        path = os.path.join(mainPath, directory)
-        
-        print("Running pipeline for WSI ", directory)
-            
+            print(directory, ": Done (4/7)")
+    
+    ### 5. Nuclear Segmentation & Filtering
     for directory in directories:
         path = os.path.join(mainPath, directory)
         if 5 in steps:
             # Pickle the dictionary to a file
             seg_path = os.path.join(path, f"{directory}_filtered_segmentations.pkl")
             if os.path.exists(seg_path) is False:
-                # 6. Nuclear Segmentation Stardist
-                print(directory, ": 5. Nuclear Segmentation Stardist")
-                from tilseg2 import nuclearseg
+                print(directory, ": 5. Nuclear Segmentation & Filtering")
+                from tilseg import nuclearseg
                 segmentations, _ = nuclearseg.nuclearseg_he_wrapper(path, save_seg=True, save_image=False)
                 # print(directory, ": Done (5/6)")
 
-                from tilseg2 import filtering_contours
+                from tilseg import filtering_contours
                 til_contours = filtering_contours.filtering(path, segmentations)
 
                 with open(seg_path, "wb") as f:
                     pickle.dump(til_contours, f)
-                print(directory, ": Done (5/6)")
+                print(directory, ": Done (5/7)")
 
-    if 6 in steps:
-        print("6. TIL score generating")
-        from tilseg2 import til_score
+    ### 6. Erode sTILs and Stitch WSI
+    for directory in directories:
+        path = os.path.join(mainPath, directory)
+        if 6 in steps:
+            print("6. Eroding sTILs and stitching patches into WSI")
+            from tilseg import til_erosion, wsi_stitch
+
+            # erode sTILs
+            print("erosding sTILs")
+            til_erosion.erode_overlaps(path, directory)
+
+            # create parent folder for all stitched images
+            stitching_dir = os.path.join(path, "stitching") 
+
+            # stitch together the raw 3CC output
+            print("stitching raw 3CC WSIs")
+            wsi_stitch.stitch_wsi(folder_path=mainPath,
+                       out_dir=stitching_dir,
+                       patch_type='3cc_raw')
+            
+            # stitch together the binary mask
+            print("stitching binary masks")
+            wsi_stitch.stitch_wsi(folder_path=mainPath,
+                       out_dir=stitching_dir,
+                       patch_type='binary')
+            
+            # stitch together the final til mask with erosion
+            print("stitching eroded til masks")
+            wsi_stitch.stitch_wsi(folder_path=mainPath,
+                       out_dir=stitching_dir,
+                       patch_type='final_til_mask_eroded')
+            
+            print(directory, ": Done (6/7)")
+
+    ### 7. Global TILseg Scoring
+    if 7 in steps:
+        print("7. TIL score generating")
+        from tilseg import til_score
         til_score.til_score_generator(mainPath)
-        print("Done (6/6)")
+        print("Done (7/7)")
 
 
 if __name__ == "__main__":

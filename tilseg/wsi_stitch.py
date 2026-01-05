@@ -16,7 +16,6 @@ from tqdm import tqdm
 # import openslide
 
 
-
 def parse_xml(anno_path,
               factor):
     """
@@ -86,7 +85,7 @@ def is_mostly_white(image,
 def get_patches(wsi_folder,
                 patch_type):
     """
-    Retrieve patches from 'patches' folder
+    Retrieve patches from 'patches' folder for each slide
 
     Args:
         wsi_path (str): List of valid patches.
@@ -96,7 +95,7 @@ def get_patches(wsi_folder,
         patches (list): An list containing the patches which are stored as np arrays.
     """
     # validate patch_type
-    valid_patch_types = {'he', '3cc', 'final_tils', 'stroma_mask', '3cc_raw', 'tils', 'binary'}
+    valid_patch_types = {'he', '3cc', 'final_tils', 'final_til_mask_eroded', 'stroma_mask', '3cc_raw', 'tils', 'binary'}
     if patch_type not in valid_patch_types:
         raise ValueError(f"Invalid patch_type '{patch_type}'. Valid options are: {valid_patch_types}")
     
@@ -105,6 +104,7 @@ def get_patches(wsi_folder,
         'he': 'patches',
         '3cc': '3class',
         'final_tils': 'final_til_contour',
+        'final_til_mask_eroded': 'filtered_til_mask_eroded',
         'stroma_mask': 'binary_masks',
         '3cc_raw': 'raw_3class',
         'tils': 'filtered_til_mask',
@@ -475,7 +475,7 @@ def save_stitched_wsi(wsi,
     wsi_rgb = cv.cvtColor(wsi, cv.COLOR_BGR2RGB)
 
     # validate patch_type
-    valid_patch_types = {'he', '3cc', 'final_tils', 'stroma_mask', '3cc_raw', 'tils', 'binary'}
+    valid_patch_types = {'he', '3cc', 'final_tils', 'final_til_mask_eroded', 'stroma_mask', '3cc_raw', 'tils', 'binary'}
     if patch_type not in valid_patch_types:
         raise ValueError(f"Invalid patch_type '{patch_type}'. Valid options are: {valid_patch_types}")
     
@@ -484,19 +484,13 @@ def save_stitched_wsi(wsi,
                 'he': 'stitched_he',
                 '3cc': 'stitched_3cc',
                 'final_tils': 'stitched_final_tils',
+                'final_til_mask_eroded': 'stitched_filtered_til_mask_eroded',
                 'stroma_mask': 'stitched_stroma_mask',
                 '3cc_raw': 'stitched_3cc_raw',
                 'tils': 'stitched_tils_binary',
                 'binary': 'stitched_binary_stroma'
             }
-    # TODO uncomment this when doing the final pipeline and have the stitched WSIs automatically populate the original folder
-    # out_dir = os.path.join(folder_path, folder_map[patch_type])
-    # os.makedirs(out_dir, exist_ok=True)
-    
-    # Define the file path with .tif extension
-    # out_path = os.path.join(out_dir, f"{slidename}.tif")
 
-    # TODO delete next 2 lines when ready 
     out_stitch_dir = os.path.join(out_dir, folder_map[patch_type])
     os.makedirs(out_stitch_dir, exist_ok=True)
     out_path = os.path.join(out_stitch_dir, f"{slidename}.tif")
@@ -507,7 +501,7 @@ def save_stitched_wsi(wsi,
 
 # wrapper function for stitching patches
 def stitch_wsi(folder_path,
-               out_dir, # TODO
+               out_dir, 
                patch_type='he'):
     """
     The wrapper function performs the following steps:
