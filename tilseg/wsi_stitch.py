@@ -376,7 +376,7 @@ def stitch_patches(patches,
     min_x, max_x = min(x_coords), max(x_coords)
     min_y, max_y = min(y_coords), max(y_coords)
     
-    print(f"Grid dimensions: min_x={min_x}, max_x={max_x}, min_y={min_y}, max_y={max_y}")
+    # print(f"Grid dimensions: min_x={min_x}, max_x={max_x}, min_y={min_y}, max_y={max_y}")
 
     # create a blank image for the WSI
     max_patch_w = max(patch_sizes, key=lambda size: size[0])[0]  # max patch width
@@ -418,8 +418,8 @@ def stitch_patches(patches,
         # ensure x_rel and y_rel are non-negative
         # x_rel = max(x_rel, 0)
         # y_rel = max(y_rel, 0)
-        print(f"x={x}, min_x={min_x}, padding={padding_w}, overlap={overlap_w}")
-        print(x_rel, y_rel)
+        # print(f"x={x}, min_x={min_x}, padding={padding_w}, overlap={overlap_w}")
+        # print(x_rel, y_rel)
         
         # load patch
         patch = patches[patch_index]
@@ -535,6 +535,7 @@ def stitch_wsi(folder_path,
     overlap_percent = 5
 
     for filename in os.listdir(folder_path):
+        print(filename)
         if filename.endswith(".svs"):
 
             # extract slide name (without extension)

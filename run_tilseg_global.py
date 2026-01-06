@@ -56,8 +56,6 @@ def main():
             from tilseg import implement
             implement.implement(path)
             print(directory, ": Done (2/8)")
-        else:
-            print("Skip: 2. Implement: 3 class classifier (2/8)")
 
 
         ### 3. Binary Stromal Mask
