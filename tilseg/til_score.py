@@ -21,8 +21,8 @@ def compute_global_tilseg_score(mainPath, directories):
     for directory in directories:
 
         # create boolean arrays 
-        arr_spatial_stroma = io.imread(os.path.join(out_stitched_filtered_stroma_dir, directory))[:,:,0] == 255 # count purely white pixels (discounting overlap)
-        arr_spatial_til = (io.imread(os.path.join(out_stitched_filtered_tils_dir, directory))[:,:,0] > 0).astype(np.uint8) # count any non-black pixels (accounting for overlapped cells)
+        arr_spatial_stroma = io.imread(os.path.join(out_stitched_filtered_stroma_dir, directory) + '.tif')[:,:,0] == 255 # count purely white pixels (discounting overlap)
+        arr_spatial_til = (io.imread(os.path.join(out_stitched_filtered_tils_dir, directory) + '.tif')[:,:,0] > 0).astype(np.uint8) # count any non-black pixels (accounting for overlapped cells)
 
         # calculate the total number of non-zero pixels in the sTIL and stromal masks
         cur_tilarea = np.count_nonzero(arr_spatial_til)
