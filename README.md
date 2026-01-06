@@ -65,53 +65,16 @@ Once the stromal binary distance mask is generated, then it is used to exclude s
 
 ## INSTALLATION
 
-#### *Create and Activate a Virtual Environment*
+Windows OS is supported for running the code. 
 
-Create a virtual environment:  
-   ```bash
-   python3 -m venv venv_tilseg
-   ```
+1. Install [Anaconda](https://www.anaconda.com/).
 
-Activate the virtual environment:  
-   - On macOS/Linux:  
-     ```bash
-     source venv_tilseg/bin/activate
-     ```
-   - On Windows (PowerShell):  
-     ```powershell
-     .\venv_tilseg\Scripts\activate
-     ```
+2. Clone this repository by typing `git clone https://github.com/Shachi-Mittal-Lab/TILseg.git` in an anaconda/command prompt
 
-Install Tensorflow-GPU separately [here](https://neptune.ai/blog/installing-tensorflow-2-gpu-guide) and then install the rest of the required python packages using the following command:
-```bash
-pip install -r requirements.txt
-```
+3. Create and run a virtual environment for this code:
+From the TILseg directory run `conda env create -f tilseg_tfGPU.yaml`.
 
-#### *Install OpenSlide Python*
-
-Shortcut Instructions: (for more detailed instructions on installing OpenSlide, please click [here](https://openslide.org/api/python/#installing))
-
-- On macOS/Linux:
-```bash
-  python3 -m pip install openslide-python
-```
-- On Windows: (adapted from [here](https://openslide.org/api/python/#installing))
-    1. Download the [OpenSlide Windows binaries](https://openslide.org/download/#binaries)
-    2. Extract them to a known path
-    3. Import `openslide` by modifying path in [extracting_patches_from_annotated_folder_wise.py](tilseg2/extracting_patches_from_annotated_folder_wise.py)
-
-    ```bash
-    # The path can also be read from a config file, etc.
-    OPENSLIDE_PATH = r'c:\path\to\openslide-win64\bin'
-    import os
-    if hasattr(os, 'add_dll_directory'):
-        # Windows
-        with os.add_dll_directory(OPENSLIDE_PATH):
-            import openslide
-    else:
-        import openslide
-    ```
-
+4. Activate the conda environment with the installed packages and dependencies by typing `conda activate tilseg_tfgpu`.
 
 ## USAGE
 
@@ -205,7 +168,7 @@ Also, provide the list of distances from the epithlial clusters (in pixels), wit
 Input the list of maximum distances from epithelial clusters to score sTILs (in pixels) (e.g.: 79,198):
 ```
 
-Spatial TILseg sTIL scores will then be generated and saved in the 'spatial_results' folder within the main input directory.
+Spatial TILseg sTIL scores will then be generated and saved in the `spatial_results` folder within the main input directory.
 
 ## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
 
