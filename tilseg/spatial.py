@@ -148,6 +148,27 @@ def spatial_stroma_filterer(stitched_stroma_mask_path, stitched_spatial_distance
     return None
 
 
+def contours_creator(stitched_tils_path, out_contours_path):
+    # convert stitched image to binary
+    stitched_mask = io.imread(stitched_tils_path)[:,:,0]
+    stitched_binary = (stitched_mask > 0).astype(np.uint8)
+    del stitched_mask
+
+    # retrieve contours
+    wsi_contours, _ = cv2.findContours(
+        stitched_binary,
+        mode=cv2.RETR_EXTERNAL,
+        method=cv2.CHAIN_APPROX_SIMPLE
+    )
+    del stitched_binary
+
+    # Save contours
+    with open(out_contours_path, "wb") as f:
+        pickle.dump(wsi_contours, f)
+
+    return None
+
+
 def tilseg_score_calculator(out_spatial_stroma_path, out_stitched_filtered_tils_contours_path):
     """
     Compute TIL spatial metrics restricted to filtered stromal regions for a single WSI.

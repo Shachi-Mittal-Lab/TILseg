@@ -17,7 +17,7 @@ while in_dir_path is None:
 
 max_ep_cluster_area_pixels_list = None
 while max_ep_cluster_area_pixels_list is None:
-    check_input_1 = list(map(int, input("Input the minimum epithilial cluster filter sizes (pixels) (e.g.: 7500,12500): ").split(',')))
+    check_input_1 = list(map(int, input("Input the list of minimum epithelial cluster size filters (in pixels) (e.g.: 7500,12500): ").split(',')))
     def is_list_of_ints(x):
         return isinstance(x, list) and all(isinstance(i, int) for i in x)
     if is_list_of_ints(check_input_1):
@@ -27,7 +27,7 @@ while max_ep_cluster_area_pixels_list is None:
 
 dist_list = None
 while dist_list is None:
-    check_input_2 = list(map(int, input("Input the maximum distance from epithilial clusters to score sTILs (pixels) (e.g.: 79,198): ").split(',')))
+    check_input_2 = list(map(int, input("Input the list of maximum distances from epithilial clusters to score sTILs (in pixels) (e.g.: 79,198): ").split(',')))
     def is_list_of_ints(x):
         return isinstance(x, list) and all(isinstance(i, int) for i in x)
     if is_list_of_ints(check_input_2):
@@ -38,9 +38,9 @@ while dist_list is None:
 
 # Further paths & parameters used in the code
 # Inputs to the code
-stitched_3CC_dir_path = os.path.join(in_dir_path, "stitched_3cc_raw")
-stitched_stroma_dir_path = os.path.join(in_dir_path, "stitched_binary_stroma")
-stitched_tils_path = os.path.join(in_dir_path, "stitched_filtered_til_mask_eroded")
+stitched_3CC_dir_path = os.path.join(in_dir_path, "stitching", "stitched_3cc_raw")
+stitched_stroma_dir_path = os.path.join(in_dir_path, "stitching", "stitched_binary_stroma")
+stitched_tils_path = os.path.join(in_dir_path, "stitching", "stitched_filtered_til_mask_eroded")
 epithelia_color = [0, 0, 255]  # Blue
 # Output file paths
 out_stitched_epithelium_path = os.path.join(in_dir_path, "stitched_ep_mask")
@@ -48,6 +48,7 @@ out_stitched_filtered_epith_clusters_distance_transform_path = os.path.join(in_d
 out_spatial_dist_mask_path = os.path.join(in_dir_path, "stitched_spatial_distance_mask")
 out_stitched_filtered_stroma_path = os.path.join(in_dir_path, "stitched_spatialFiltered_stroma_mask")
 out_spatial_results_path = os.path.join(in_dir_path, "spatial_results")
+stitched_tils_path_contours = os.path.join(in_dir_path, "stitching", "stitched_filtered_til_mask_eroded_contours")
 
 # List all stitched WSI files in the directory (assumes file names end with .tif/.png/etc.)
 WSIs = os.listdir(stitched_3CC_dir_path)
@@ -133,6 +134,16 @@ for WSI in WSIs:
         os.remove(os.path.join(out_stitched_filtered_epith_clusters_distance_transform_path,  WSI[:-4], WSI[:-4] + f'_{max_ep_cluster_area_pixels}.npy'))
 
 
+        # Creating contour files for the global eroded TILs. This will be loaded everytime when calculating spatial TILseg scores for the different combinations of spatial parameters
+        os.makedirs(stitched_tils_path_contours, exist_ok=True)
+        stitched_tils_path_cur = os.path.join(stitched_tils_path, WSI[:-4]+'.tif')
+        out_contours_path_cur = os.path.join(stitched_tils_path_contours, WSI[:-4]+'.pkl')
+        from tilseg.spatial import contours_creator
+        contours_creator(stitched_tils_path=stitched_tils_path_cur,
+                        out_contours_path=out_contours_path_cur)
+
+
+
 # -----------------------------------------------------------------------------
 # Step 3: Compute spatial TIL metrics for each (area threshold, distance threshold)
 # -----------------------------------------------------------------------------
@@ -170,7 +181,7 @@ for max_ep_cluster_area_pixels in max_ep_cluster_area_pixels_list:
             # Folder for filtered stroma masks for this parameter combo
             out_spatial_stroma_path_cur = os.path.join(out_stitched_filtered_stroma_path, f'{max_ep_cluster_area_pixels}area_{dist}dist', WSI[:-4]+'.tif')
             # Pickled global sTIL contours for this WSI
-            out_stitched_filtered_tils_contours_path_cur = os.path.join(stitched_tils_path, WSI[:-4]+'.pkl')
+            out_stitched_filtered_tils_contours_path_cur = os.path.join(stitched_tils_path_contours, WSI[:-4]+'.pkl')
 
             # Filtering out sTIL contours that fall outside of the spatially confined region & calculating the spatial sTIL score
             from tilseg.spatial import tilseg_score_calculator
