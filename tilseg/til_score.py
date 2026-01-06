@@ -4,12 +4,13 @@ import pandas as pd
 import numpy as np
 import skimage.io as io
 
-def compute_global_tilseg_score(mainPath, directories):
+def compute_global_tilseg_score(mainPath):
 
     # retrieve stitched binary masks (denominator) and eroded til masks (numerator)
     stitching_dir = os.path.join(mainPath, "stitching")
     out_stitched_filtered_tils_dir = os.path.join(stitching_dir, "stitched_filtered_til_mask_eroded")
     out_stitched_filtered_stroma_dir = os.path.join(stitching_dir, "stitched_binary_stroma")
+    slidenames = [os.path.splitext(f)[0] for f in os.listdir(mainPath) if f.lower().endswith('.svs')]
 
     tilscore_list = []
     tilcount_list = []
@@ -18,11 +19,11 @@ def compute_global_tilseg_score(mainPath, directories):
     tilarea_contour_list = []
     tilarea_contour_masked_list = []
 
-    for directory in directories:
+    for name in slidenames:
 
         # create boolean arrays 
-        arr_spatial_stroma = io.imread(os.path.join(out_stitched_filtered_stroma_dir, directory) + '.tif')[:,:,0] == 255 # count purely white pixels (discounting overlap)
-        arr_spatial_til = (io.imread(os.path.join(out_stitched_filtered_tils_dir, directory) + '.tif')[:,:,0] > 0).astype(np.uint8) # count any non-black pixels (accounting for overlapped cells)
+        arr_spatial_stroma = io.imread(os.path.join(out_stitched_filtered_stroma_dir, name) + '.tif')[:,:,0] == 255 # count purely white pixels (discounting overlap)
+        arr_spatial_til = (io.imread(os.path.join(out_stitched_filtered_tils_dir, name) + '.tif')[:,:,0] > 0).astype(np.uint8) # count any non-black pixels (accounting for overlapped cells)
 
         # calculate the total number of non-zero pixels in the sTIL and stromal masks
         cur_tilarea = np.count_nonzero(arr_spatial_til)

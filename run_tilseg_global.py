@@ -139,7 +139,7 @@ def main():
     if 8 in steps:
         print("8. Global TIL score generating")
         from tilseg import til_score
-        til_score.compute_global_tilseg_score(mainPath, directories)
+        til_score.compute_global_tilseg_score(mainPath)
         print("Done! (8/8)")
 
 
