@@ -22,10 +22,10 @@ def main():
             # Split the input by commas and try to convert each element to an integer
             steps_list = list(map(int, user_input.split(',')))
             # Check if the numbers are within a certain range
-            if all(1 <= step <= 6 for step in steps_list):
+            if all(1 <= step <= 8 for step in steps_list):
                 steps = steps_list  # Assign the valid steps and end the loop
             else:
-                print("Please enter numbers between 1 and 6.")
+                print("Please enter numbers between 1 and 8.")
         except ValueError:
             print("Invalid input. Please enter numbers separated by commas.")
 
