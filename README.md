@@ -16,9 +16,6 @@ Furthermore, the clinical utility of the spatial heterogenity of sTILs is unclea
 ### Overall Workflow
 ![TILseg Pipeline Workflow](figures/methods.jpg)
 
-### Sample Results
-![Visualization](figures/tilseg_performance_vertical.jpg)
-
 ## METHODOLOGY
 
 ### **Global Scoring**
@@ -169,15 +166,3 @@ Input the list of maximum distances from epithelial clusters to score sTILs (in 
 ```
 
 Spatial TILseg sTIL scores will then be generated and saved in the `spatial_results` folder within the main input directory.
-
-## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
-
-For a cohort of 51 TNBC patients who received neoadjuvant chemotherapy, we ran their H&E-stained diagnostic biopsy section through the TILseg pipeline. For slide-level stroma & sTILs, we observed statistically significant stratification of good and poor response to therapy, as measured by recurrence-free survival (RFS). We also find that scoring only sTILs < 0.5 mm from epithelia has a poor stratification potential, most likely due to not accounting for cancer-interacting sTILs farther away from epithelia. On the contrary, scoring sTILs 1.0-1.5 mm from epithelia shows the best stratification of this cohort. 
-
-**Global TILseg Patient Scores** 
-![TILseg Stratifying TNBC Patient Cohort](figures/biopsy_survival.jpg)
-*Global TILseg scoring as a predictive biomarker for recurrence risk post-neoadjuvant therapy in the discovery cohort. (A) A multivariate Cox regression model was fitted on WSIs in the training and validation I subsets (n = 48), showing TILseg Score is an independent prognostic factor with a 28% reduction in recurrence hazard (HR = 0.72 per 1% increase, 95% CI [0.51-1.01], p = 0.0559) after adjusting for clinical tumor stage (HR = 0.90 per stage increase, 95% CI [1.17-5.15], p = 0.0180). A second multivariate Cox regression model was fitted on WSIs in the training, validation I, and validation II samples (n = 56). Consistent directional effects were observed where TILseg remained associated with improved RFS (HR = 0.74 per 1% increase, 95% CI [0.53-1.02], p = 0.0662), independent of tumor stage at diagnosis (HR = 0.48 per stage increase, 95% CI [0.83-3.13], p = 0.0157). The 8 patient WSIs in the validation II dataset were not used for any part of the TILseg pipeline development, and these patient TILseg scores resulted in an association with RFS that remained strong. (B) Patients in the discovery cohort who  recurred within 3 years (poor outcome, n = 12) had significantly lower TILseg scores than patients who did not recur within 3 years (good outcome, n = 39). Kaplan-Meier stratification of RFS is shown for the discovery cohort by (C) manual scoring (n = 54) and (D) TILseg scoring (n = 56). A threshold of ≥ 20% sTILs was used for manual assessment while a cutoff of ≥ 3.4% was used to stratify patients based on TILseg scores. * indicates that one highly influential and unrepresentative patient was excluded from this figure.*
-
-**Spatially Confined TILseg Patient Scores**
-![TILseg Spatial Stratification](figures/spatial_survival.png)
-*TILseg scoring in a spatial subset of diagnostic biopsies as a predictive biomarker for recurrence outcome in the discovery cohort. (A) Multivariate Cox proportional hazards regression p values for continuous spatial TILseg scoring in different subsets of stroma around epithelia using diagnostic biopsies from the discovery cohort (n=56 TNBC patients). The Cox model accounts for tumor stage at diagnosis. The heatmap shows the change in the predictive power of TILs with increasing stromal distance from the epithelial clusters. The columns denote the distance from epithelial clusters within which stroma was scored for sTILs and the rows indicate the size below which epithelial clusters were considered as noise and removed from the scoring analysis. On the y-axis, 0, 797, and 1594 µm2 correspond to 0, 5, and 10 kernels (50 x 50 pixel) of 3CC predictions, respectively. A lower p value in the heatmap illustrates a more significant association of the spatial subset TILseg score with patient RFS independent of the tumor stage at diagnosis. The spatial subset of stroma with the lowest p value (most significant TILseg score association with RFS) is highlighted within a black box. (B) Kaplan-Meier curve shows significant improvement in the stratification of patient RFS by spatial TILseg scoring using the suggested optimal spatial stromal pocket and epithelial cluster size (log-rank test). A threshold of ≥ 6.5% sTILs was used as the cutoff based on the optimal log-rank p-value. (C) Patient pCR status has a much weaker stratification potential of RFS. (D) TILseg scoring in a spatial subset of stroma within 50 µm of epithelial clusters that are at least 797 µm2 results in a significantly better stratified distribution of the scores (Mann Whitney U p = 0.0062) across Good and Poor RFS patient groups than scoring stroma across entire diagnostic biopsy WSIs (Mann Whitney U p = 0.043). Poor outcome patients had an event within 3 years, while Good outcome patients did not. (E) Patient pCR status has a much weaker association with Good and Poor RFS outcome.*
