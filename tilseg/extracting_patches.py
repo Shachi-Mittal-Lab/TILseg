@@ -9,8 +9,7 @@ from PIL import Image, ImageDraw
 
 # Importing OpenSlide Package
 cwd = os.getcwd()
-parent_dir = os.path.dirname(cwd)
-OPENSLIDE_PATH = os.path.join(parent_dir,
+OPENSLIDE_PATH = os.path.join(cwd,
                               'openslide-bin-4.0.0.6-windows-x64',
                               'bin')
 if hasattr(os, 'add_dll_directory'):
