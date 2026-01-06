@@ -1,4 +1,4 @@
-# TILseg: Segmentation of stromal Tumor Infiltrating Lymphocytes (sTILs) in TNBC
+# TILseg: Automated sTIL Scoring Reveals Prognostic Patterns in TNBC
 
 ## CONTENTS
 1. [About](#about)
@@ -21,7 +21,7 @@ Furthermore, the clinical utility of the spatial heterogenity of sTILs is unclea
 
 ## METHODOLOGY
 
-### Global Scoring:
+### **Global Scoring**
 
 #### 1. Patch Extraction
 In `extracting_patches.py`, the annotation files (.XML) are used to parse the WSI into 3000x4000 pixel patches to reduce computational burdens in the pipeline. Patches which are mostly glass, background, or contain sparse tissue are filtered out of the analysis to further increase computational efficiency.
@@ -38,7 +38,7 @@ Then, `stromal_patches_multiplication.py` renders the H&E RGB image only in the 
 #### 5. sTIL Nuclear Segmentation + Morphological Filtering
 On the full H&E patch, `nuclearseg.py` segments nuclei across the entire tissue area using a pretrained [StarDist](https://github.com/stardist/stardist) model. Then, `filtering_contours.py` excludes nuclear segmentations that lie outside the stromal regions and filters out nuclei based on size (excludes larger epithelial and stromal cells) and roundness (excludes elongated fibroblast-like cells) filters. As a result, we remain only with sTILs nuclei for scoring.
 
-#### 6. sTIL Post-processing 
+#### 6. sTIL Segmentation Post-processing 
 Once the sTILs have been segmented and filtered, `til_erosion.py` adds a 1-pixel gap between any adjacent contours patch-wise (on the binary mask of the filled sTIL contours). 
 
 #### 7. WSI-level Stitching
@@ -47,15 +47,14 @@ To generate WSI-level outputs, `wsi_stitch.py` stitches all of patches together 
 #### 8. Global sTILs Scoring
 The final step, `til_score.py`, produces a whole-slide level sTILs score. This score is the ratio between the total area of sTILs (Step 4 output) divided by the total area of stroma (Step 5 output) aggregated across all patches extracted from the WSI. The scores for the input slide(s) are output as a single .CSV file within the input directory called `global_tilseg_scores.csv`.
 
-### Spatial sTIL Scoring
+### **Spatial Scoring**
 The pipeline is also able to compute sTIL scores using the following parameters to isolate a subset of sTILs that are:
 1. within a certain distance from epithelial regions
 2. in proximity to epithelial clusters above a specified cluster size threshold
 
 ## INSTALLATION
-### Create and Activate a Virtual Environment
 
-Download current 3 class model [here](https://uwnetid-my.sharepoint.com/:u:/g/personal/bkha_uw_edu/EZltGcMIdEZGjZC9F6bkqIwBG9ZGyrnKOl0CMH1oIi1m3Q?e=hY63Hn)
+#### *Create and Activate a Virtual Environment*
 
 Create a virtual environment:  
    ```bash
@@ -77,7 +76,7 @@ Install Tensorflow-GPU separately [here](https://neptune.ai/blog/installing-tens
 pip install -r requirements.txt
 ```
 
-### Install OpenSlide Python
+#### *Install OpenSlide Python*
 
 Shortcut Instructions: (for more detailed instructions on installing OpenSlide, please click [here](https://openslide.org/api/python/#installing))
 
@@ -105,7 +104,9 @@ Shortcut Instructions: (for more detailed instructions on installing OpenSlide, 
 
 ## USAGE
 
-### Data Preparation
+### **Global Scoring**
+
+#### *Data Preparation*
 
 For every WSI that needs to be scored, the user must provide a single annotation file (`.XML`) for each corresponding image file. We recommend annotating the tissue area that needs to be scored, and each annotation file can contain multiple annotations. 
 
@@ -113,10 +114,10 @@ Currently, TILseg is only able to parse annotation file inputs (`.XML`) from the
 * [Aperio ImageScope](https://www.leicabiosystems.com/us/digital-pathology/manage/aperio-imagescope/)
 * [Automated Slide Analysis Platform](https://computationalpathologygroup.github.io/ASAP) (ASAP).
 
-### Model Selection (optional)
+#### *Model Selection (optional)*
 Currently, the following model is being used by default ans is accessible in the repository here: `TILseg/models/3CC_discovery.h5`. If you plan on using this model, no further changes need to be made. However, if a different model needs to be used, first upload the desired model to `TILseg/models`. Then, change the name to the desired model in line 57 in `implement.py` (located in `TILseg/tilseg`) and save the file before executing the pipeline.
 
-### Execution
+#### *Execution*
 The pipeline can be directly run from the terminal/command line by first executing `run_tilseg.py` (On some systems, `python3` may need to be used instead of `python`):
 ```bash
 python run_tilseg.py
@@ -145,7 +146,7 @@ Once the desired steps have been selected, the TILseg scores will be output in t
 Output file: 'path/to/your/folder/global_tilseg_scores.csv'
 ```
 
-### Required Inputs
+#### *Required Inputs*
 In a single folder (`path/to/your/folder`), please include the following:
 * The H&E-stained whole slide images needed to be scored (`.SVS`).
 * Corresponding annotations of the tissue area for each WSI (`.XML`). The name of the annotation file should exactly match the name of the WSI file.
@@ -156,7 +157,7 @@ Invalid Examples:
 ❌ `specimen_A.svs` and `specimen_A.json` (wrong annotation format)  
 ❌ `sample_05.svs` with no corresponding XML file
 
-### Recommended Directory Structure for Execution
+#### *Recommended Directory Structure for Execution*
 ```text
 path/to/your/folder/
 │
