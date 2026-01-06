@@ -29,14 +29,13 @@ def main():
         except ValueError:
             print("Invalid input. Please enter numbers separated by commas.")
 
-    ### 1. Extracting Patches from Annotations
+
+    ### STEP 1. Extracting Patches from Annotations
     if 1 in steps:
         print("1. Extracting Patches from Annotations")
         from tilseg import extracting_patches
         extracting_patches.extracting_patches(mainPath)
         print("Done (1/8)")
-    else:
-        print("Skip: 1. Extracting Patches from Annotations (1/6)")
 
     # Get the list of items (files and directories) in the specified path
     items = os.listdir(mainPath)
@@ -47,10 +46,9 @@ def main():
     # Loop through each WSI directory
     for directory in directories:
         path = os.path.join(mainPath, directory)
-        
-        print("Running pipeline for WSI ", directory)
 
-        ### 2. Implement: 3 class classifier
+
+        ### STEP 2. Implement: 3 class classifier
         if 2 in steps:
             print(directory, ": 2. Implement: 3 class classifier")
             from tilseg import implement
@@ -58,7 +56,7 @@ def main():
             print(directory, ": Done (2/8)")
 
 
-        ### 3. Binary Stromal Mask
+        ### STEP 3. Binary Stromal Mask
         if 3 in steps:            
             print(directory, ": 3. Binary Stromal Mask")
             from tilseg import binary_stromal_mask
@@ -66,7 +64,7 @@ def main():
             print(directory, ": Done (3/8)")
         
 
-        ### 4. Stromal Patches Multiplication
+        ### STEP 4. Stromal Patches Multiplication
         if 4 in steps:
             print(directory, ": 4. Stromal Patches Multiplication")
             from tilseg import stromal_patches_multiplication
@@ -74,9 +72,7 @@ def main():
             print(directory, ": Done (4/8)")
     
 
-    ### 5. Nuclear Segmentation & Filtering
-    for directory in directories:
-        path = os.path.join(mainPath, directory)
+        ### STEP 5. Nuclear Segmentation & Filtering
         if 5 in steps:
             # Pickle the dictionary to a file
             seg_path = os.path.join(path, f"{directory}_filtered_segmentations.pkl")
@@ -93,9 +89,7 @@ def main():
                 print(directory, ": Done (5/8)")
 
 
-    ### 6. Erode sTILs 
-    for directory in directories:
-        path = os.path.join(mainPath, directory)
+        ### STEP 6. Erode sTILs 
         if 6 in steps:
             print("6. Eroding sTILs and stitching patches into WSI")
             from tilseg import til_erosion
@@ -107,7 +101,7 @@ def main():
             print(directory, ": Done (6/8)")
 
 
-    ### 7. Stitch WSI
+    ### STEP 7. Stitch WSI
     if 7 in steps:
         print("7. Stitching patches into WSI")
         from tilseg import wsi_stitch
@@ -135,7 +129,7 @@ def main():
         
         print("Done (7/8)")
 
-    ### 8. Global TILseg Scoring
+    ### STEP 8. Global TILseg Scoring
     if 8 in steps:
         print("8. Global TIL score generating")
         from tilseg import til_score
