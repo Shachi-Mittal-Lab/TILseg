@@ -15,7 +15,7 @@ def main():
     # Input Steps
     steps = None
     while steps is None:
-        string = "Input steps number you would like to run:\n1. Extracting Patches from Annotations\n2. Implement: 3 class classifier\n3. Binary Stromal Mask\n4. Stromal Patches Multiplication\n5. Nuclear Segmentation Stardist & Filtering Contours\n6. Stitch WSI\n7. TIL score"
+        string = "Input steps number you would like to run:\n1. Extracting Patches from Annotations\n2. Implement: 3 class classifier\n3. Binary Stromal Mask\n4. Stromal Patches Multiplication\n5. Nuclear Segmentation Stardist & Filtering Contours\n6. Erode sTIL Segmentations\n7. Stitch WSI\n8. Global TIL score"
         print(string)
         user_input = input("Input as [1,2,3,4,5,6,7,8]: ")
         try:
@@ -110,34 +110,32 @@ def main():
 
 
     ### 7. Stitch WSI
-    for directory in directories:
-        path = os.path.join(mainPath, directory)
-        if 7 in steps:
-            print("7. Stitching patches into WSI")
-            from tilseg import wsi_stitch
+    if 7 in steps:
+        print("7. Stitching patches into WSI")
+        from tilseg import wsi_stitch
 
-            # create parent folder for all stitched images
-            stitching_dir = os.path.join(path, "stitching") 
-
-            # stitch together the raw 3CC output
-            print("stitching raw 3CC WSIs...")
-            wsi_stitch.stitch_wsi(folder_path=mainPath,
-                       out_dir=stitching_dir,
-                       patch_type='3cc_raw')
-            
-            # stitch together the binary mask
-            print("stitching binary masks...")
-            wsi_stitch.stitch_wsi(folder_path=mainPath,
-                       out_dir=stitching_dir,
-                       patch_type='binary')
-            
-            # stitch together the final til mask with erosion
-            print("stitching eroded til masks..")
-            wsi_stitch.stitch_wsi(folder_path=mainPath,
-                       out_dir=stitching_dir,
-                       patch_type='final_til_mask_eroded')
-            
-            print(directory, ": Done (7/8)")
+        # create parent folder for all stitched images
+        stitching_dir = os.path.join(mainPath, "stitching") 
+        
+        # stitch together the raw 3CC output
+        print("stitching raw 3CC WSIs...")
+        wsi_stitch.stitch_wsi(folder_path=mainPath,
+                    out_dir=stitching_dir,
+                    patch_type='3cc_raw')
+        
+        # stitch together the binary mask
+        print("stitching binary masks...")
+        wsi_stitch.stitch_wsi(folder_path=mainPath,
+                    out_dir=stitching_dir,
+                    patch_type='binary')
+        
+        # stitch together the final til mask with erosion
+        print("stitching eroded til masks..")
+        wsi_stitch.stitch_wsi(folder_path=mainPath,
+                    out_dir=stitching_dir,
+                    patch_type='final_til_mask_eroded')
+        
+        print("Done (7/8)")
 
     ### 8. Global TILseg Scoring
     if 8 in steps:
