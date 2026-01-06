@@ -52,6 +52,17 @@ The pipeline is also able to compute sTIL scores using the following parameters 
 1. within a certain distance from epithelial regions
 2. in proximity to epithelial clusters above a specified cluster size threshold
 
+Once the parameters above are defined, spatial scoring is performed via a singular script, `spatial.py` in the following steps:
+
+#### 1. Build epithelium masks
+Using the final stitched outputs from the global scoring pipeline, the stitched 3CC prediction is used to generate a binary mask of only the epithelial regions (blue) and is saved for subsequent operations.
+
+#### 2. Generate binary masks of spatially filtered (based on proximity to epithelial clusters) stroma.
+To obtain only the stromal regions at a defined distance from epithelial clusters above a certain area threshold (using the epithelial mask output from step 1), the distance transform is calculated for every stromal and epithlial pixel pairing. Only stromal pixels within the defined distance are kept in the stromal binary distance mask.  
+
+#### 3. Compute spatial TIL metrics for each (area threshold, distance threshold) pairing
+Once the stromal binary distance mask is generated, then it is used to exclude sTIL contours whose centroids fall outside of the stromal regions. Then, the filtered contours are used to create a binary filtered sTIL mask. To calculate the spatial sTIL score using the defined epithelial area threshold and distance threshold, we divide the sTIL area (binary filtered sTIL mask) by the stromal area (stromal binary distance mask).
+
 ## INSTALLATION
 
 #### *Create and Activate a Virtual Environment*
