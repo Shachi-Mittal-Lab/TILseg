@@ -27,7 +27,7 @@ while max_ep_cluster_area_pixels_list is None:
 
 dist_list = None
 while dist_list is None:
-    check_input_2 = list(map(int, input("Input the list of maximum distances from epithilial clusters to score sTILs (in pixels) (e.g.: 79,198): ").split(',')))
+    check_input_2 = list(map(int, input("Input the list of maximum distances from epithelial clusters to score sTILs (in pixels) (e.g.: 79,198): ").split(',')))
     def is_list_of_ints(x):
         return isinstance(x, list) and all(isinstance(i, int) for i in x)
     if is_list_of_ints(check_input_2):

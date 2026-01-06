@@ -183,7 +183,29 @@ path/to/your/folder/
 
 #### *Data Preparation*
 
+The global scoring needs to be run prior to running the spatial scoring, which will ensure the necessary inputs required for the spatial pipeline.
+
 #### *Execution*
+
+The pipeline can be directly run from the terminal/command line by xecuting `run_tilseg_spatial.py` (On some systems, `python3` may need to be used instead of `python`):
+```bash
+python run_tilseg_spatial.py
+```
+Provide the input path containing the WSIs, their corresponding annotation files (.XML), and outputs of running the global TILseg pipeline:   
+```bash
+Path to WSIs and their annotations: 'path/to/your/folder'
+```
+Provide the list of epithelial cluster size filters (in pixels). For each iteration, epithelial clusters that are smaller than the respective filter size will be removed from the analyses to counter the effect of small, noisy epithelial predictions.
+```bash
+Input the list of minimum epithelial cluster size filters (in pixels) (e.g.: 7500,12500):
+```
+
+Also, provide the list of distances from the epithlial clusters (in pixels), within which to perform the sTIL scoring. For each iteration, only stroma within the specified distance of epithelial clusters will be scored. 
+```bash
+Input the list of maximum distances from epithelial clusters to score sTILs (in pixels) (e.g.: 79,198):
+```
+
+Spatial TILseg sTIL scores will then be generated and saved in the 'spatial_results' folder within the main input directory.
 
 ## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
 
