@@ -8,7 +8,11 @@ import pickle
 from PIL import Image, ImageDraw
 
 # Importing OpenSlide Package
-OPENSLIDE_PATH = r'd:\\github_repos\\TILseg2\\openslide-bin-4.0.0.6-windows-x64\\bin'
+cwd = os.getcwd()
+parent_dir = os.path.dirname(cwd)
+OPENSLIDE_PATH = os.path.join(parent_dir,
+                              'openslide-bin-4.0.0.6-windows-x64',
+                              'bin')
 if hasattr(os, 'add_dll_directory'):
     # Windows
     with os.add_dll_directory(OPENSLIDE_PATH):

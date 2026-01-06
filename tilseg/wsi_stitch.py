@@ -13,8 +13,17 @@ from PIL import Image
 import skimage.io as io
 from tqdm import tqdm
 
-# import openslide
-
+# Importing OpenSlide Package
+cwd = os.getcwd()
+parent_dir = os.path.dirname(cwd)
+OPENSLIDE_PATH = os.path.join(parent_dir,
+                              'openslide-bin-4.0.0.6-windows-x64',
+                              'bin')
+if hasattr(os, 'add_dll_directory'):
+    # Windows
+    with os.add_dll_directory(OPENSLIDE_PATH):
+        import openslide  
+import openslide
 
 def parse_xml(anno_path,
               factor):
