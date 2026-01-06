@@ -51,7 +51,7 @@ def compute_global_tilseg_score(mainPath):
         tilarea_contour_masked_list.append(cur_tilarea_contour_masked)
 
     # delineate csv columns
-    df = pd.DataFrame({'Directory': directories, 'tilscore': tilscore_list, 'tilcount': tilcount_list, 'tilarea': tilarea_list, 'tilarea_Contour': tilarea_contour_list, 'tilarea_Contour_Masked': tilarea_contour_masked_list, 'stromaarea': stromaarea_list})
+    df = pd.DataFrame({'WSI': slidenames, 'tilscore': tilscore_list, 'tilcount': tilcount_list, 'tilarea': tilarea_list, 'tilarea_Contour': tilarea_contour_list, 'tilarea_Contour_Masked': tilarea_contour_masked_list, 'stromaarea': stromaarea_list})
     df['tilarea_percDiff'] = (df['tilarea_Contour_Masked'] - df['tilarea']) / df['tilarea'] * 100
 
     # save results as a .csv file to mainPath directory
