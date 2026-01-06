@@ -129,9 +129,9 @@ Currently, TILseg is only able to parse annotation file inputs (`.XML`) from the
 Currently, the following model is being used by default ans is accessible in the repository here: `TILseg/models/3CC_discovery.h5`. If you plan on using this model, no further changes need to be made. However, if a different model needs to be used, first upload the desired model to `TILseg/models`. Then, change the name to the desired model in line 57 in `implement.py` (located in `TILseg/tilseg`) and save the file before executing the pipeline.
 
 #### *Execution*
-The pipeline can be directly run from the terminal/command line by first executing `run_tilseg.py` (On some systems, `python3` may need to be used instead of `python`):
+The pipeline can be directly run from the terminal/command line by first executing `run_tilseg_global.py` (On some systems, `python3` may need to be used instead of `python`):
 ```bash
-python run_tilseg.py
+python run_tilseg_global.py
 ```
 
 Provide the input path containing the WSIs and their corresponding annotation files (.XML):   
@@ -178,6 +178,12 @@ path/to/your/folder/
 ├── slide_2.xml
 └── ...               # Additional slide pairs
 ```
+
+### **Spatial Scoring**
+
+#### *Data Preparation*
+
+#### *Execution*
 
 ## TILseg Results for H&E-stained TNBC Core-needle biopsies Pre-Neoadjuvant Chemotherapy
 
