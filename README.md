@@ -72,7 +72,7 @@ Windows OS is supported for running the code.
 2. Clone this repository by typing `git clone https://github.com/Shachi-Mittal-Lab/TILseg.git` in an anaconda/command prompt
 
 3. Create and run a virtual environment for this code:
-From the TILseg directory run `conda env create -f tilseg_tfGPU.yaml`. To be able to use GPU for running inference for the CNN model, please install [tensorflow with GPU support] (https://neptune.ai/blog/installing-tensorflow-2-gpu-guide).
+From the TILseg directory run `conda env create -f tilseg_tfGPU.yaml`. To be able to use GPU for running inference for the CNN model, please install [tensorflow with GPU support](https://neptune.ai/blog/installing-tensorflow-2-gpu-guide).
 
 4. Activate the conda environment with the installed packages and dependencies by typing `conda activate tilseg_tfgpu`.
 
