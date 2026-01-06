@@ -15,9 +15,8 @@ from tqdm import tqdm
 
 # Importing OpenSlide Package
 cwd = os.getcwd()
-parent_dir = os.path.dirname(cwd)
-OPENSLIDE_PATH = os.path.join(parent_dir,
-                              'openslide-bin-4.0.0.6-windows-x64',
+OPENSLIDE_PATH = os.path.join(cwd,
+                              'openslide-bin-4.0.0.10-windows-x64',
                               'bin')
 if hasattr(os, 'add_dll_directory'):
     # Windows
