@@ -17,7 +17,7 @@ def main():
     while steps is None:
         string = "Input steps number you would like to run:\n1. Extracting Patches from Annotations\n2. Implement: 3 class classifier\n3. Binary Stromal Mask\n4. Stromal Patches Multiplication\n5. Nuclear Segmentation Stardist & Filtering Contours\n6. Stitch WSI\n7. TIL score"
         print(string)
-        user_input = input("Input as [1,2,3,4,5,6,7]: ")
+        user_input = input("Input as [1,2,3,4,5,6,7,8]: ")
         try:
             # Split the input by commas and try to convert each element to an integer
             steps_list = list(map(int, user_input.split(',')))
@@ -34,7 +34,7 @@ def main():
         print("1. Extracting Patches from Annotations")
         from tilseg import extracting_patches
         extracting_patches.extracting_patches(mainPath)
-        print("Done (1/7)")
+        print("Done (1/8)")
     else:
         print("Skip: 1. Extracting Patches from Annotations (1/6)")
 
@@ -55,24 +55,27 @@ def main():
             print(directory, ": 2. Implement: 3 class classifier")
             from tilseg import implement
             implement.implement(path)
-            print(directory, ": Done (2/7)")
+            print(directory, ": Done (2/8)")
         else:
-            print("Skip: 2. Implement: 3 class classifier (2/7)")
+            print("Skip: 2. Implement: 3 class classifier (2/8)")
+
 
         ### 3. Binary Stromal Mask
         if 3 in steps:            
             print(directory, ": 3. Binary Stromal Mask")
             from tilseg import binary_stromal_mask
             binary_stromal_mask.binary_stromal_mask(path)
-            print(directory, ": Done (3/7)")
+            print(directory, ": Done (3/8)")
         
+
         ### 4. Stromal Patches Multiplication
         if 4 in steps:
             print(directory, ": 4. Stromal Patches Multiplication")
             from tilseg import stromal_patches_multiplication
             stromal_patches_multiplication.multiplying(path)
-            print(directory, ": Done (4/7)")
+            print(directory, ": Done (4/8)")
     
+
     ### 5. Nuclear Segmentation & Filtering
     for directory in directories:
         path = os.path.join(mainPath, directory)
@@ -89,48 +92,59 @@ def main():
 
                 with open(seg_path, "wb") as f:
                     pickle.dump(til_contours, f)
-                print(directory, ": Done (5/7)")
+                print(directory, ": Done (5/8)")
 
-    ### 6. Erode sTILs and Stitch WSI
+
+    ### 6. Erode sTILs 
     for directory in directories:
         path = os.path.join(mainPath, directory)
         if 6 in steps:
             print("6. Eroding sTILs and stitching patches into WSI")
-            from tilseg import til_erosion, wsi_stitch
+            from tilseg import til_erosion
 
             # erode sTILs
-            print("erosding sTILs")
+            print("eroding sTILs")
             til_erosion.erode_overlaps(path, directory)
+
+            print(directory, ": Done (6/8)")
+
+
+    ### 7. Stitch WSI
+    for directory in directories:
+        path = os.path.join(mainPath, directory)
+        if 7 in steps:
+            print("7. Stitching patches into WSI")
+            from tilseg import wsi_stitch
 
             # create parent folder for all stitched images
             stitching_dir = os.path.join(path, "stitching") 
 
             # stitch together the raw 3CC output
-            print("stitching raw 3CC WSIs")
+            print("stitching raw 3CC WSIs...")
             wsi_stitch.stitch_wsi(folder_path=mainPath,
                        out_dir=stitching_dir,
                        patch_type='3cc_raw')
             
             # stitch together the binary mask
-            print("stitching binary masks")
+            print("stitching binary masks...")
             wsi_stitch.stitch_wsi(folder_path=mainPath,
                        out_dir=stitching_dir,
                        patch_type='binary')
             
             # stitch together the final til mask with erosion
-            print("stitching eroded til masks")
+            print("stitching eroded til masks..")
             wsi_stitch.stitch_wsi(folder_path=mainPath,
                        out_dir=stitching_dir,
                        patch_type='final_til_mask_eroded')
             
-            print(directory, ": Done (6/7)")
+            print(directory, ": Done (7/8)")
 
-    ### 7. Global TILseg Scoring
-    if 7 in steps:
-        print("7. TIL score generating")
+    ### 8. Global TILseg Scoring
+    if 8 in steps:
+        print("8. Global TIL score generating")
         from tilseg import til_score
         til_score.compute_global_tilseg_score(mainPath, directories)
-        print("Done (7/7)")
+        print("Done! (8/8)")
 
 
 if __name__ == "__main__":

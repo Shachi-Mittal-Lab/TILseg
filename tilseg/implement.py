@@ -54,7 +54,7 @@ def constructVGGModel():
     modelPath = os.path.join(
         parent_dir, 
         "models", 
-        "3CC_discovery.h5" # TODO
+        "3CC_discovery.h5" # TODO (to use another model, please change the string to the name of the desired model)
     )
 
     if modelPath:
