@@ -1,8 +1,12 @@
-# Imports
+'''
+2. IMPLEMENT 3-CLASS CLASSIFICATION
+[descriptions]
+'''
 import time
 import os
 import numpy as np
 import gc
+import glob
 
 from keras.layers import Dropout, Flatten, Dense
 from keras.applications import VGG19
@@ -54,8 +58,10 @@ def constructVGGModel():
     modelPath = os.path.join(
         parent_dir, 
         "models", 
-        "3CC_discovery.h5" # TODO (to use another model, please change the string to the name of the desired model)
+        "3CC_independent_val.h5" # TODO (to use another model, please change the string to the name of the desired model)
     )
+
+    res_conv = VGG19(weights='imagenet', include_top=False, input_shape=(48, 48, 3))
 
     if modelPath:
         # Freeze the layers except the last 12 layers
@@ -137,12 +143,12 @@ def drawColoredRectangles(draw, x, y, w, h, predictedOutput):
 def goodTile(im, percentPixels = 90):
     good = True
     pix = np.array(im, dtype=float)
-    mask = (pix>230).all(axis=-1)
-    pix[mask] = 1
+    mask = (pix>230).all(axis=-1)           # boolean mask where True = nearly white pixels (i.e. background)
+    pix[mask] = 1                           # markes background pixels = True
 
     w, h = mask.shape
 
-    if (np.sum(mask) / (w * h)) > (percentPixels / 100):
+    if (np.sum(mask) / (w * h)) > (percentPixels / 100): # if the number of background pixels > %Pixels --> the patch is marked as bad
         good = False
     return good
 
@@ -153,55 +159,108 @@ add this mask to the colored mask image and return the obtained image.
 def combineOriginalAndMaskToEliminateWhite(imOrig, imMask):
     pix = np.array(imOrig, dtype=float)
     pixMask = np.array(imMask, dtype=float)
-    mask = (pix>230).all(axis=-1)
-    pixMask[mask] = 1
+    mask = (pix>230).all(axis=-1)               # boolean mask where True = nearly white pixels (i.e. background)
+    pixMask[mask] = 1                           # marks background pixels = True
     return Image.fromarray(np.uint8(pixMask))
 
 '''
 Receives a fileName and makes a matrix of classes for it.
 '''
 
-def makeClassMatrixForOneFile(fileName):
+def makeClassMatrixForOneFile(fileName, batch_size=64):
+    
     startImagePred = time.time()
+    
     im = PIL.Image.open(fileName)
     w, h = im.size
     timesInWidth = int(w / dx) + (w % dx > 0)
-    timesInHight = int(h / dy) + (h % dy > 0)
-    noOfTilesTotal = timesInWidth * timesInHight
-    print(f'{timesInWidth:.2f} times in width and {timesInHight:.2f} in height, '
-    f'that is {noOfTilesTotal:.2f} applications for the main part.')
-    print(f'This will take approx {(noOfTilesTotal * 0.035):.2f} seconds, '
-    f'that is {((noOfTilesTotal * 0.035) / 60):.2f} minutes.')
-
-    matrixOfClasses = np.zeros((timesInWidth, timesInHight))
-    x = 0
-    y = 0
-
-    x1 = 0
-    y1 = 0
+    timesInHeight = int(h / dy) + (h % dy > 0)
+    noOfTilesTotal = timesInWidth * timesInHeight
     
-    while x <= w - dx:
-        while y <= h - dy:
-            croppedImage = im.crop((x, y, x + dx, y + dy))
-            croppedImage = croppedImage.resize((48,48))
-            # predictedOutput = predictImage(croppedImage)
-            if goodTile(croppedImage):
-                predictedOutput = predictImage(croppedImage)
+    print(f"{timesInWidth} x {timesInHeight} tiles → {noOfTilesTotal} predictions for {fileName}")
+   
+    matrixOfClasses = np.zeros((timesInWidth, timesInHeight), dtype=int) # hold the class prediction for each tile
+    
+    # holding image arrays for batch predictions
+    batch_images = []
+    batch_coords = [] # stores index of each kernel
+    
+    # iterate over each 50x50 kernel
+    for x1, x in enumerate(range(0, w - dx + 1, dx)):
+        for y1, y in enumerate(range(0, h - dy + 1, dy)):
+            croppedImage = im.crop((x, y, x + dx, y + dy)).resize((48, 48))
+            if goodTile(croppedImage): # checks if mostly white/empty
+                img_array = utils.img_to_array(croppedImage) / 255.0
+                batch_images.append(img_array)
+                batch_coords.append((x1, y1))
             else:
-                predictedOutput = -1 #will be colored as black
-            matrixOfClasses[x1][y1] = predictedOutput
-            y = y + dy
-            y1 += 1
-        x = x + dx
-        x1 += 1
-        y = 0
-        y1 = 0
-
+                matrixOfClasses[x1][y1] = -1  # mark as bad tile
+            
+            # predict once batch is full
+            if len(batch_images) >= batch_size:
+                predictions = model1.predict(np.array(batch_images), verbose=0)
+                predicted_classes = predictions.argmax(axis=1) # get predictions for each tile
+                for (i, j), pred in zip(batch_coords, predicted_classes):
+                    matrixOfClasses[i][j] = pred
+                batch_images.clear()
+                batch_coords.clear()
+                gc.collect() # garbage collection
+    
+    # process any remaining kernels in the batch
+    if batch_images:
+        predictions = model1.predict(np.array(batch_images), verbose=0)
+        predicted_classes = predictions.argmax(axis=1)
+        for (i, j), pred in zip(batch_coords, predicted_classes):
+            matrixOfClasses[i][j] = pred
+        batch_images.clear()
+        batch_coords.clear()
+        gc.collect()
+        
     endImagePred = time.time()
-
-    matrixOfClasses = matrixOfClasses.astype(int)
-
     return matrixOfClasses, endImagePred - startImagePred
+
+# NOT BATCHED
+# def makeClassMatrixForOneFile(fileName):
+#     startImagePred = time.time()
+#     im = PIL.Image.open(fileName)
+#     w, h = im.size
+#     timesInWidth = int(w / dx) + (w % dx > 0)
+#     timesInHight = int(h / dy) + (h % dy > 0)
+#     noOfTilesTotal = timesInWidth * timesInHight
+#     print(f'{timesInWidth:.2f} times in width and {timesInHight:.2f} in height, '
+#     f'that is {noOfTilesTotal:.2f} applications for the main part.')
+#     print(f'This will take approx {(noOfTilesTotal * 0.035):.2f} seconds, '
+#     f'that is {((noOfTilesTotal * 0.035) / 60):.2f} minutes.')
+
+#     matrixOfClasses = np.zeros((timesInWidth, timesInHight))
+#     x = 0
+#     y = 0
+
+#     x1 = 0
+#     y1 = 0
+    
+#     while x <= w - dx:
+#         while y <= h - dy:
+#             croppedImage = im.crop((x, y, x + dx, y + dy))
+#             croppedImage = croppedImage.resize((48,48))
+#             # predictedOutput = predictImage(croppedImage)
+#             if goodTile(croppedImage):
+#                 predictedOutput = predictImage(croppedImage)
+#             else:
+#                 predictedOutput = -1 #will be colored as black
+#             matrixOfClasses[x1][y1] = predictedOutput
+#             y = y + dy
+#             y1 += 1
+#         x = x + dx
+#         x1 += 1
+#         y = 0
+#         y1 = 0
+
+#     endImagePred = time.time()
+
+#     matrixOfClasses = matrixOfClasses.astype(int)
+
+#     return matrixOfClasses, endImagePred - startImagePred
 '''
 Next method receives the fileName and the matrix
 to make the colored mask.
