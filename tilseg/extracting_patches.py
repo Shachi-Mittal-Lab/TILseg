@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import skimage.io as io
 import cv2 as cv
@@ -27,43 +25,11 @@ def parse_xml(anno_path, specs):
         - Aperio ImageScope: Pathology Slide Viewing Software
         - ASAP: Automated Slide Analysis Platform
     '''
-def parse_xml(anno_path, specs):
-    '''
-    Extracting coordinates of the annotations from an XML file.
-    Built to be compatible with XML files annotated with:
-        - Aperio ImageScope: Pathology Slide Viewing Software
-        - ASAP: Automated Slide Analysis Platform
-        - QuPath: GeoJSON format
-    '''
     factor = 2**specs['mlevel']
-    annolist = {}
-    i = 0
-
-    # Handle GeoJSON FIRST — before any XML parsing is attempted
-    if anno_path.endswith('.geojson'):
-        print("Parsing GeoJSON from QuPath!")
-        with open(anno_path, 'r') as f:
-            data = json.load(f)
-        for feature in data['features']:
-            geometry = feature['geometry']
-            geom_type = geometry['type']
-            if geom_type == 'Polygon':
-                ring = geometry['coordinates'][0]
-                vasc = [(int(x / factor), int(y / factor)) for x, y in ring]
-                annolist[i] = vasc
-                i += 1
-            elif geom_type == 'MultiPolygon':
-                for polygon in geometry['coordinates']:
-                    ring = polygon[0]
-                    vasc = [(int(x / factor), int(y / factor)) for x, y in ring]
-                    annolist[i] = vasc
-                    i += 1
-        return annolist  # Early return — never touches ET
-
-    # Only reach here for .xml files
     tree = ET.ElementTree(file=anno_path)
+    annolist = {}
     root = tree.getroot()
-
+    i = 0
     if root.find("Annotation") is not None:
         print("Parsing XML from Aperio ImageScope!")
         for annotation in root.findall("Annotation"):
@@ -79,7 +45,7 @@ def parse_xml(anno_path, specs):
                         continue
                 annolist[i] = vasc
                 i += 1
-    elif root.find('.//Coordinates') is not None:
+    elif root.iter('Coordinates') is not None:
         print("Parsing XML from ASAP")
         for coords in root.iter('Coordinates'):
             vasc = []
@@ -87,63 +53,7 @@ def parse_xml(anno_path, specs):
                 vasc.append((int(float(coord.attrib.get("X")) / factor), int(float(coord.attrib.get("Y")) / factor)))
             annolist[i] = vasc
             i += 1
-
     return annolist
-    '''
-    factor = 2**specs['mlevel']
-    tree = ET.ElementTree(file=anno_path)
-    annolist = {}
-    root = tree.getroot()
-    i = 0
-    if root.find("Annotation") is not None: # .xml imported from Imagescope
-        print("Parsing XML from Aperio ImageScope!")
-        for annotation in root.findall("Annotation"):
-            for region in annotation.findall(".//Region"):
-                vasc = []
-                for vertex in region.findall(".//Vertex"):
-                    try:
-                        x = float(vertex.attrib.get("X"))
-                        y = float(vertex.attrib.get("Y"))
-                        vasc.append((int(x / factor), int(y / factor)))
-                    except Exception as e:
-                        print(f"Error parsing coordinates: {e}")
-                        continue
-                annolist[i] = vasc
-                i += 1
-    # find was iter
-    elif root.find('Coordinates') is not None: # .xml imported from ASAP
-        print("Parsing XML from ASAP")
-        for coords in root.iter('Coordinates'):
-            vasc = []
-            for coord in coords:
-                vasc.append((int(float(coord.attrib.get("X")) / factor), int(float(coord.attrib.get("Y")) / factor)))
-            annolist[i] = vasc
-            i += 1
-    elif anno_path.endswith('.geojson'): # .geojson imported from QuPath
-        print("Parsing GeoJSON from QuPath!")
-        with open(anno_path, 'r') as f:
-            data = json.load(f)
-
-        for feature in data['features']:
-            geometry = feature['geometry']
-            geom_type = geometry['type']
-
-            if geom_type == 'Polygon':
-                # coordinates[0] is the exterior ring; ignore holes (indices 1+)
-                ring = geometry['coordinates'][0]
-                vasc = [(int(x / factor), int(y / factor)) for x, y in ring]
-                annolist[i] = vasc
-                i += 1
-
-            elif geom_type == 'MultiPolygon':
-                # Each entry in coordinates is one polygon; [0] is its exterior ring
-                for polygon in geometry['coordinates']:
-                    ring = polygon[0]
-                    vasc = [(int(x / factor), int(y / factor)) for x, y in ring]
-                    annolist[i] = vasc
-                    i += 1
-    return annolist
-    '''
 
 def is_mostly_white(image, threshold):
     '''
@@ -374,19 +284,9 @@ def extracting_patches_from_annotated_folder_wise(folder_path, specs, rerun):
             # Extract WSI slide name
             slidename = os.path.splitext(wsi_file)[0]
             # Finding corresponding XML file
-            # annotname = f"{slidename}.xml"
-            # annopath = os.path.join(folder_path, annotname)
-
-            # Check for .xml first, then fall back to .geojson
-            annopath = None
-            for ext in ['.xml', '.geojson']:
-                candidate = os.path.join(folder_path, f"{slidename}{ext}")
-                if os.path.exists(candidate):
-                    annopath = candidate
-                    break
-
-            # if os.path.exists(annopath) is False:
-            if annopath is None:
+            annotname = f"{slidename}.xml"
+            annopath = os.path.join(folder_path, annotname)
+            if os.path.exists(annopath) is False:
                 print(f"There is no annotations for {slidename}")
             else:
                 # Create output directory for WSI
@@ -420,5 +320,3 @@ def extracting_patches(folder_path, rerun=False):
     }
 
     extracting_patches_from_annotated_folder_wise(folder_path, specs, rerun)
-
-extracting_patches(r"\\Mittal-MRL-NAS\Research Data\[PROJ]_STTR\DATA\svs", rerun=False)
