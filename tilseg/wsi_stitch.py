@@ -18,11 +18,20 @@ cwd = os.getcwd()
 OPENSLIDE_PATH = os.path.join(cwd,
                               'openslide-bin-4.0.0.10-windows-x64',
                               'bin')
+print(OPENSLIDE_PATH)
 if hasattr(os, 'add_dll_directory'):
     # Windows
     with os.add_dll_directory(OPENSLIDE_PATH):
         import openslide  
 import openslide
+
+# handle long path names
+def to_long_path(path):
+        if path.startswith("\\\\"):
+            return "\\\\?\\UNC\\" + path[2:]
+        elif not path.startswith("\\\\?\\"):
+            return "\\\\?\\" + path
+        return path
 
 def parse_xml(anno_path,
               factor):
@@ -119,12 +128,14 @@ def get_patches(wsi_folder,
         'binary': 'binary_masks'
     }
     patches_folder = os.path.join(wsi_folder, folder_map[patch_type])
+
+    patches_folder_long = to_long_path(patches_folder)
     
     # Filter files: Only .tif files that match the 'position_<number>.tif' pattern
     # this is because of hidden files like Thumb.db, DS.store, etc.
     filtered_filenames = [
-        filename for filename in os.listdir(patches_folder)
-        if filename.endswith('.tif')
+        filename for filename in os.listdir(patches_folder_long)
+        if filename.endswith('.tif') and re.search(r'position_(\d+)', filename)
     ]
 
     # sort filenames based on the number in 'position_<number>.tif'
@@ -136,14 +147,43 @@ def get_patches(wsi_folder,
     # read patches into a np.array for later usage
     patches = []
     patch_sizes = []  # List to store patch sizes
+    skipped = []
     for filename in sorted_filenames:
         patch_path = os.path.join(patches_folder, filename)
-        patch_bgr = cv.imread(patch_path)
+        patch_path_long = os.path.join(patches_folder_long, filename)
+
+        if not os.path.exists(patch_path_long):
+            print(f"WARNING: File not found, skipping: {patch_path}")
+            skipped.append(filename)
+            continue
+
+        if os.path.getsize(patch_path_long) == 0:
+            print(f"WARNING: File is empty (0 bytes), skipping: {patch_path}")
+            skipped.append(filename)
+            continue
+
+        patch_bgr = cv.imread(patch_path_long)
+
+        if patch_bgr is None: # if OpenCV throws a file not found error...
+            try:
+                arr = np.fromfile(patch_path_long, dtype=np.uint8) # ... likely the image was saved as a raw array instead of a compressed file
+                patch_bgr = arr[16:].reshape(3000, 4000, 3)
+                print(f"Loaded as raw array: {filename}")
+            except Exception as e:
+                print(f"WARNING: Could not load as raw array either, skipping {filename}: {e}")
+                skipped.append(filename)
+                continue
+
         patch_rgb = cv.cvtColor(patch_bgr, cv.COLOR_BGR2RGB)
         patches.append(patch_rgb)
 
         # Get the size of the patch (width, height)
         patch_sizes.append((patch_rgb.shape[1], patch_rgb.shape[0]))  # (width, height)
+
+    if skipped:
+        print(f"\nSkipped {len(skipped)} unreadable patch(es):")
+        for f in skipped:
+            print(f"  - {f}")
     
     return patches, patch_sizes
 

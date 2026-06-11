@@ -4,15 +4,27 @@ from skimage import io
 from multiprocessing import Pool
 import time
 from concurrent.futures import ProcessPoolExecutor
-
+import re
 
 def process_stromal_patch(file, in_dir, out_dir):
     wsi_code = os.path.basename(in_dir)
     PatchesPath = os.path.join(in_dir, 'patches')
     StromaBinaryMasksPath = os.path.join(in_dir, 'binary_masks')
-    stroma_mask_path = os.path.join(StromaBinaryMasksPath, 'stroma_binary_mask_Classified_' + file)
+    # stroma_mask_path = os.path.join(StromaBinaryMasksPath, 'stroma_binary_mask_Classified_' + file)
+    # output_tif_path = os.path.join(out_dir, f'stromal_{file}')
+    
+    # Extract patch number and build new-style mask filename
+    match = re.search(r'patch_position_(\d+)', file)
+    if not match:
+        print(f"Skipping {file}: could not parse patch position.")
+        return
+    patch_num = match.group(1)
 
-    output_tif_path = os.path.join(out_dir, f'stromal_{file}')
+    stroma_mask_filename = f'sbm_patch_position_{patch_num}.tif'
+    stroma_mask_path = os.path.join(StromaBinaryMasksPath, stroma_mask_filename)
+
+    output_tif_path = os.path.join(out_dir, f'stromal_patch_position_{patch_num}.tif')
+
     if os.path.exists(output_tif_path):
         print(f"Stromal mask for {file} is done.")
     else:

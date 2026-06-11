@@ -3,10 +3,20 @@ import numpy as np
 from skimage import io
 from multiprocessing import Pool
 import time
+import re
 
 def process_image(file, patches_dir, masks_directory):
     # Save the modified image with stroma_binary_mask prefix as a tif file
-    output_path = os.path.join(masks_directory, f'stroma_binary_mask_{file}')
+    # output_path = os.path.join(masks_directory, f'sbm_{file}')
+    match = re.search(r'patch_position_(\d+)', file)
+    if match:
+        patch_num = match.group(1)
+        output_filename = f'sbm_patch_position_{patch_num}.tif'
+    else:
+        output_filename = f'sbm_{file}'  # fallback if pattern not found
+
+    output_path = os.path.join(masks_directory, output_filename)
+    
     if os.path.exists(output_path):
         print(f"Stroma binary mask for {file} is done.")
     else:

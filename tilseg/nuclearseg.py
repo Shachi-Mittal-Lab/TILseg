@@ -19,6 +19,13 @@ from csbdeep.io import save_tiff_imagej_compatible
 from stardist import random_label_cmap, _draw_polygons, export_imagej_rois
 from stardist.models import StarDist2D
 
+# Prevent TensorFlow from pre-allocating all GPU memory
+import tensorflow as tf
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+
 def normalize_predict(folder_path: str):
 
     detections_raw = {}
@@ -41,7 +48,15 @@ def normalize_predict(folder_path: str):
 
         img = normalize(X, 1,99.8, axis=axis_norm)
         # print(f"Normalized image shape: {img.shape}")
-        labels, details = model.predict_instances(img)
+        # labels, details = model.predict_instances(img)
+
+        # Adaptive tiling based on patch size
+        h, w = img.shape[:2]
+        n_tiles_h = max(1, int(np.ceil(h / 1500)))
+        n_tiles_w = max(1, int(np.ceil(w / 2000)))
+        n_tiles = (n_tiles_h, n_tiles_w, 1) # should give (2, 2, 1) --> 4 tiles
+
+        labels, details = model.predict_instances(img, n_tiles=n_tiles, show_tile_progress=False)
 
         detections_raw[filename] = {}
         detections_raw[filename]['labels'] = labels

@@ -1,5 +1,4 @@
 import json
-
 import numpy as np
 import skimage.io as io
 import cv2 as cv
@@ -89,6 +88,7 @@ def parse_xml(anno_path, specs):
             i += 1
 
     return annolist
+
     '''
     factor = 2**specs['mlevel']
     tree = ET.ElementTree(file=anno_path)

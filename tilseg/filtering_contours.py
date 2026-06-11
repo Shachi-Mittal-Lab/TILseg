@@ -3,6 +3,7 @@ from skimage import io
 import cv2 as cv
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
+import re
 
 # Importing OpenSlide Package
 cwd = os.getcwd()
@@ -50,23 +51,39 @@ def get_filtered_contours(orig_path, og_file, segmentations, round_filtered,
 
 def stromal_filtering(contours_filtered, og_file, orig_path, stromal_path,
                      stromal_filtered, filtered_til_mask, final_til_contour):
-    # Load images only if needed for output
+    
+    # set up naming convention based on patch position
+    match = re.search(r'patch_position_(\d+)', og_file)
+    if not match:
+        print(f"Skipping {og_file}: could not parse patch position.")
+        return []
+    patch_num = match.group(1)
+    stromal_filename = f'stromal_patch_position_{patch_num}.tif'
+    stromal_file_path = os.path.join(stromal_path, stromal_filename)
+    
+    if not os.path.exists(stromal_file_path):
+        print(f"Stromal patch not found, skipping: {stromal_filename}")
+        return []
+    
     need_output = any([stromal_filtered, filtered_til_mask, final_til_contour])
     
     if need_output:
         og_img_bgr = cv.imread(os.path.join(orig_path, og_file))
         og_img_rgb = cv.cvtColor(og_img_bgr, cv.COLOR_BGR2RGB)
-        stromal_bgr = cv.imread(os.path.join(stromal_path, f'stromal_{og_file}'), cv.IMREAD_COLOR)
+        stromal_bgr = cv.imread(stromal_file_path, cv.IMREAD_COLOR)  # <-- fixed
         stromal_gray = cv.cvtColor(stromal_bgr, cv.COLOR_BGR2GRAY)
     else:
-        stromal_gray = cv.imread(os.path.join(stromal_path, f'stromal_{og_file}'), cv.IMREAD_GRAYSCALE)
+        stromal_gray = cv.imread(stromal_file_path, cv.IMREAD_GRAYSCALE)  # <-- fixed
+
+    if stromal_gray is None:
+        print(f"Failed to read stromal patch: {stromal_filename}")
+        return []
     
-    # Pre-allocate mask
     mask = np.zeros(stromal_gray.shape[:2], dtype=np.uint8)
     contours_stromal_b = []
     
+    # draw + fill in contours
     for contour in contours_filtered:
-        # Clear mask instead of recreating
         mask.fill(0)
         cv.drawContours(mask, [contour], -1, 255, thickness=cv.FILLED)
         
@@ -78,7 +95,7 @@ def stromal_filtering(contours_filtered, og_file, orig_path, stromal_path,
         if nonzero_pixels / total_pixels >= 0.5:
             contours_stromal_b.append(contour)
     
-    # Only generate outputs if paths are provided
+    # only generate masks if paths are provided
     if final_til_contour:
         og_img_bgr = cv.imread(os.path.join(orig_path, og_file))
         og_img_rgb = cv.cvtColor(og_img_bgr, cv.COLOR_BGR2RGB)

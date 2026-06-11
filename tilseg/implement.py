@@ -1,16 +1,16 @@
 '''
 2. IMPLEMENT 3-CLASS CLASSIFICATION
-[descriptions]
 '''
 import time
 import os
 import numpy as np
 import gc
 import glob
+import warnings
 
 from keras.layers import Dropout, Flatten, Dense
 from keras.applications import VGG19
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras import utils
 import tensorflow as tf
 import PIL
@@ -57,12 +57,15 @@ def constructVGGModel():
     # Construct the model path relative to grandparent directory
     modelPath = os.path.join(
         parent_dir, 
-        "models", 
-        "3CC_independent_val.h5" # TODO (to use another model, please change the string to the name of the desired model)
+        "models",
+        "model_combine-discovery-kilgore_20260407.h5" # TODO (to use another model, please change the string to the name of the desired model)
     )
 
-    res_conv = VGG19(weights='imagenet', include_top=False, input_shape=(48, 48, 3))
+    print(modelPath)
+    global model1
+    # model1 = load_model(modelPath, compile=False)
 
+    res_conv = VGG19(weights='imagenet', include_top=False, input_shape=(48, 48, 3))
     if modelPath:
         # Freeze the layers except the last 12 layers
         # for layer in res_conv.layers[:-12]:
@@ -78,8 +81,33 @@ def constructVGGModel():
         model1.add(Dropout(0.2))
         model1.add(Dense(3, activation='softmax'))
         model1.load_weights(modelPath)
-    else:
-        print("No 3CC model is found.")
+
+    # else:
+    #     print("No 3CC model is found.")
+
+    print("Model loaded successfully.")
+    print(model1.summary())
+
+
+def constructVGGModel_OLD():
+    modelPath = r"\\Mittal-MRL-NAS\Research Data\[PROJ]_TILseg\0-models\3ClassesVGG19TuneAugmentation_old.hdf5"
+    dx=dy=48
+    # modelPath = r'C:\Users\mrl\Desktop\TILseg_Project\3ClassesVGG19TuneAugmentation.hdf5'
+    res_conv = VGG19(weights='imagenet', include_top=False, input_shape=(dx, dy, 3))
+    # Freeze the layers except the last 12 layers
+    for layer in res_conv.layers[:-12]:
+        layer.trainable = False
+    # Create the model
+    global model1
+    model1 = Sequential()
+    # Add the res convolutional base model
+    model1.add(res_conv)
+    # Add new layers
+    model1.add(Flatten())
+    model1.add(Dense(1024, activation='relu'))
+    model1.add(Dropout(0.2))
+    model1.add(Dense(3, activation='softmax'))
+    model1.load_weights(modelPath)
 
 def predictImage(test_image):
     test_image = utils.img_to_array(test_image)
@@ -299,6 +327,13 @@ already produced to avoid overwork.
 '''
 
 def makeColoredMasks(inputFolder, batch_size=3):
+    if not os.path.isdir(inputFolder):
+        warnings.warn(
+            f"Patch folder not found, skipping 3-class classification: {inputFolder}",
+            RuntimeWarning
+        )
+        return None
+    
     files = [file for file in os.listdir(inputFolder) if file.endswith('tif')]
     numOfImages = len(files)
     print('There are ', numOfImages,'to process in the input folder: ', inputFolder)

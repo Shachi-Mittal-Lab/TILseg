@@ -6,6 +6,7 @@ import os
 import pickle
 import skimage.io as io
 import skimage
+import re
 
 
 def contour_to_label_mask(contours, patch_shape=(3000, 4000)):
@@ -54,22 +55,29 @@ def erode_overlaps(slide_dir, slidename):
         segmentations = pickle.load(f)
 
     for patch, contours in segmentations.items():
-        # generate label mask
-        label_mask = contour_to_label_mask(contours)
-        boundary_bool = skimage.segmentation.find_boundaries(label_mask, connectivity=label_mask.ndim,
-                                                                 mode='outer', background=0)
-        
-        # converting these pixels to the background value in the label array
-        label_mask[boundary_bool] = 0
-        
-        # converting the label array into a binary mask of foreground (255) and background (0)
-        nuclei_mask_final = np.zeros((label_mask.shape[0], label_mask.shape[1]))
-        nuclei_mask_final[label_mask != 0] = 255
-        nuclei_mask_final = np.uint8(nuclei_mask_final)
-        
-        # saving the binary mask in the save directory
-        filtered_til_mask_eroded_patch_path = os.path.join(out_dir, patch)
+        # Extract patch number for constructing out path
+        match = re.search(r'patch_position_(\d+)', patch)
+        if not match:
+            print(f"Skipping {patch}: could not parse patch position.")
+            continue
+        patch_num = match.group(1)
+        out_filename = f'eroded_patch_position_{patch_num}.tif'
+        filtered_til_mask_eroded_patch_path = os.path.join(out_dir, out_filename)
+
         if not os.path.exists(filtered_til_mask_eroded_patch_path):
+            # generate label mask
+            label_mask = contour_to_label_mask(contours)
+            boundary_bool = skimage.segmentation.find_boundaries(label_mask, connectivity=label_mask.ndim,
+                                                                    mode='outer', background=0)
+            
+            # converting these pixels to the background value in the label array
+            label_mask[boundary_bool] = 0
+            
+            # converting the label array into a binary mask of foreground (255) and background (0)
+            nuclei_mask_final = np.zeros((label_mask.shape[0], label_mask.shape[1]))
+            nuclei_mask_final[label_mask != 0] = 255
+            nuclei_mask_final = np.uint8(nuclei_mask_final)
+
             io.imsave(filtered_til_mask_eroded_patch_path, nuclei_mask_final, check_contrast=False)
 
     return None
