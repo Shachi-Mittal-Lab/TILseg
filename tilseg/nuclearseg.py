@@ -1,5 +1,6 @@
-# imports
-
+'''
+5.1. SEGMENT NUCLEI FROM H&E PATCHES USING STARDIST
+'''
 import cv2
 import sys
 import numpy as np

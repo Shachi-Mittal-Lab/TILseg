@@ -1,5 +1,6 @@
-## IMPORTS
-
+'''
+7. STITCH PATCHES INTO WSI
+'''
 # Standard library imports
 import os
 import pickle

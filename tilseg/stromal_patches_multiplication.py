@@ -1,3 +1,6 @@
+'''
+4. ISOLATE H&E STROMA USING STROMAL MASK
+'''
 import os
 import numpy as np
 from skimage import io

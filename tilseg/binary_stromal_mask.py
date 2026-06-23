@@ -1,3 +1,6 @@
+'''
+2. EXTRACT STROMAL CLASS AS A BINARY MASK
+'''
 import os
 import numpy as np
 from skimage import io

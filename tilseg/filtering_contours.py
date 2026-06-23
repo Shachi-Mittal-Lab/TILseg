@@ -1,3 +1,6 @@
+'''
+5.2. APPLY MORPHOLOGICAL AND STROMAL FILTERING OF NUCLEAR CONTOURS
+'''
 import os
 from skimage import io
 import cv2 as cv

@@ -58,7 +58,7 @@ def constructVGGModel():
     modelPath = os.path.join(
         parent_dir, 
         "models",
-        "model_combine-discovery-kilgore_20260407.h5" # TODO (to use another model, please change the string to the name of the desired model)
+        "3CC_discovery.h5" # TODO (to use another model, please change the string to the name of the desired model)
     )
 
     print(modelPath)
@@ -88,9 +88,13 @@ def constructVGGModel():
     print("Model loaded successfully.")
     print(model1.summary())
 
-
+# pre-trained VGG19:
+# Mittal S, Stoean C, Kajdacsy-Balla A, Bhargava R. 
+# Digital Assessment of Stained Breast Tissue Images for Comprehensive Tumor and Microenvironment Analysis. 
+# Front Bioeng Biotechnol [Internet]. Frontiers; 2019 
+# Available from: https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2019.00246/full
 def constructVGGModel_OLD():
-    modelPath = r"\\Mittal-MRL-NAS\Research Data\[PROJ]_TILseg\0-models\3ClassesVGG19TuneAugmentation_old.hdf5"
+    modelPath = r"path/to/model"
     dx=dy=48
     # modelPath = r'C:\Users\mrl\Desktop\TILseg_Project\3ClassesVGG19TuneAugmentation.hdf5'
     res_conv = VGG19(weights='imagenet', include_top=False, input_shape=(dx, dy, 3))
@@ -165,9 +169,9 @@ def drawColoredRectangles(draw, x, y, w, h, predictedOutput):
         draw.rectangle([(x,y),x + dx, y + dy], fill = 'red' )
     return draw
 
-#a tile is good if at least percentPixel% are below 230,
-#that is they are not only white
-#uses PIL as input
+# a tile is good if at least percentPixel% are below 230,
+# that is they are not only white
+# uses PIL as input
 def goodTile(im, percentPixels = 90):
     good = True
     pix = np.array(im, dtype=float)
@@ -247,48 +251,6 @@ def makeClassMatrixForOneFile(fileName, batch_size=64):
     endImagePred = time.time()
     return matrixOfClasses, endImagePred - startImagePred
 
-# NOT BATCHED
-# def makeClassMatrixForOneFile(fileName):
-#     startImagePred = time.time()
-#     im = PIL.Image.open(fileName)
-#     w, h = im.size
-#     timesInWidth = int(w / dx) + (w % dx > 0)
-#     timesInHight = int(h / dy) + (h % dy > 0)
-#     noOfTilesTotal = timesInWidth * timesInHight
-#     print(f'{timesInWidth:.2f} times in width and {timesInHight:.2f} in height, '
-#     f'that is {noOfTilesTotal:.2f} applications for the main part.')
-#     print(f'This will take approx {(noOfTilesTotal * 0.035):.2f} seconds, '
-#     f'that is {((noOfTilesTotal * 0.035) / 60):.2f} minutes.')
-
-#     matrixOfClasses = np.zeros((timesInWidth, timesInHight))
-#     x = 0
-#     y = 0
-
-#     x1 = 0
-#     y1 = 0
-    
-#     while x <= w - dx:
-#         while y <= h - dy:
-#             croppedImage = im.crop((x, y, x + dx, y + dy))
-#             croppedImage = croppedImage.resize((48,48))
-#             # predictedOutput = predictImage(croppedImage)
-#             if goodTile(croppedImage):
-#                 predictedOutput = predictImage(croppedImage)
-#             else:
-#                 predictedOutput = -1 #will be colored as black
-#             matrixOfClasses[x1][y1] = predictedOutput
-#             y = y + dy
-#             y1 += 1
-#         x = x + dx
-#         x1 += 1
-#         y = 0
-#         y1 = 0
-
-#     endImagePred = time.time()
-
-#     matrixOfClasses = matrixOfClasses.astype(int)
-
-#     return matrixOfClasses, endImagePred - startImagePred
 '''
 Next method receives the fileName and the matrix
 to make the colored mask.

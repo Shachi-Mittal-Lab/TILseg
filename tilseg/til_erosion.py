@@ -1,4 +1,6 @@
-## IMPORTS
+'''
+6. SEPARATE ADJACENT NUCLEI
+'''
 import numpy as np
 import pandas as pd
 import cv2

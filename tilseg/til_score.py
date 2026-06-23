@@ -1,3 +1,6 @@
+'''
+8. COMPUTE GLOBAL sTIL SCORE
+'''
 import os
 import cv2
 import pandas as pd

@@ -1,3 +1,6 @@
+'''
+1. EXTRACT PATCHES FROM WSI
+'''
 import json
 import numpy as np
 import skimage.io as io
@@ -55,38 +58,6 @@ def parse_xml(anno_path, specs):
             annolist[i] = vasc
             i += 1
 
-    return annolist
-
-    '''
-    factor = 2**specs['mlevel']
-    tree = ET.ElementTree(file=anno_path)
-    annolist = {}
-    root = tree.getroot()
-    i = 0
-    if root.find("Annotation") is not None: # .xml imported from Imagescope
-        print("Parsing XML from Aperio ImageScope!")
-        for annotation in root.findall("Annotation"):
-            for region in annotation.findall(".//Region"):
-                vasc = []
-                for vertex in region.findall(".//Vertex"):
-                    try:
-                        x = float(vertex.attrib.get("X"))
-                        y = float(vertex.attrib.get("Y"))
-                        vasc.append((int(x / factor), int(y / factor)))
-                    except Exception as e:
-                        print(f"Error parsing coordinates: {e}")
-                        continue
-                annolist[i] = vasc
-                i += 1
-    # find was iter
-    elif root.find('Coordinates') is not None: # .xml imported from ASAP
-        print("Parsing XML from ASAP")
-        for coords in root.iter('Coordinates'):
-            vasc = []
-            for coord in coords:
-                vasc.append((int(float(coord.attrib.get("X")) / factor), int(float(coord.attrib.get("Y")) / factor)))
-            annolist[i] = vasc
-            i += 1
     return annolist
 
 def is_mostly_white(image, threshold):
